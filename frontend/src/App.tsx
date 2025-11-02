@@ -1,38 +1,65 @@
-// frontend/src/App.tsx
-
 import { useState, useEffect } from 'react';
 import './App.css';
 
+interface Message {
+  id: number;
+  content: string;
+  created_at: string;
+}
+
 function App() {
-  // Create an empty "state" variable to store the message.
-  const [message, setMessage] = useState('');
+  const [messages, setMessages] = useState<Message[]>([]);
+  // 1. Add a new state to track the loading status.
+  const [isLoading, setIsLoading] = useState(true);
 
-  //useEffect is a React Hook that runs side effects.
-  //Fetching data is a side effect.
-  //The empty array [] at the end means this effect runs only ONCE
-  // when the component first loads.
   useEffect(() => {
-    //Use the browser's built-in `fetch` function to make a request to 
-    // the backend API.
-    fetch('http://127.0.0.1:5000/')
-      .then(response => response.json()) //Parse the JSON response
+    fetch('http://127.0.0.1:5000/api/messages')
+      .then(response => response.json())
       .then(data => {
-        console.log(data); //Optional: log the data to the console
-        setMessage(data.message); //Update the message state variable
+        setMessages(data);
+        // 2. Set loading to false AFTER data is fetched.
+        setIsLoading(false);
       })
-      .catch(error => console.error('Error fetching data:', error));
-  }, []); //Empty dependency array means run once on mount.
+      .catch(error => {
+        console.error('Error fetching data:', error);
+        // 3. Also set loading to false if an error occurs.
+        setIsLoading(false);
+      });
+  }, []);
 
-  //The component's UI.
+  // 4. Create a function for cleaner rendering logic.
+  const renderContent = () => {
+    if (isLoading) {
+      return <p>Loading messages...</p>;
+    }
+    
+    if (messages.length === 0) {
+      return <p>No messages found. Be the first to post!</p>;
+    }
+
+    return (
+      <ul>
+        {messages.map(message => (
+          <li key={message.id}>
+            <p>{message.content}</p>
+            <small>Posted on: {new Date(message.created_at).toLocaleString()}</small>
+          </li>
+        ))}
+      </ul>
+    );
+  };
+
   return (
     <div className="App">
       <header className="App-header">
-        <h1>Full-Stack Portfolio</h1>
-        {"This is my full-stack portfolio showing my skills in typescript, python, and SQL."}
-        <p>{message || 'Loading message from backend...'}</p>
+        <h1>Messages from the Database</h1>
+        
+        {/* 5. Call the render function. */}
+        {renderContent()}
+
       </header>
     </div>
   );
 }
 
-export default App
+export default App;

@@ -137,3 +137,10 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# .gitignore
+
+# ... all the existing rules for Python and Node ...
+
+# Environment variables file for the backend
+backend/.env
